@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <h1 th:text="${result}"></h1>
+    <h1 th:text="${dto}"></h1>
+    <!-- 위와 같이 코딩하면, 페이지 소스보기로 봤을 때 아래처럼 출력됨
+    SampleDTO(sno=100, first=First..100, last=Last..100, regTime=2024-03-12T13:39:07.412537)
+    -->
+
+
+    <!-- 반면 아래 <script> 태그와 같이 코딩하면, 페이지 소스보기로 봤을 때 아래처럼 JSON 형태로 출력됨
+    var dto = {"sno":100,"first":"First..100","last":"Last..100","regTime":"2024-03-12T13:39:07.412537"}
+    -->
+    <script th:inline="javascript">
+        var msg = [[${result}]];
+        var dto = [[${dto}]];
+    </script>
+</body>
+</html>
