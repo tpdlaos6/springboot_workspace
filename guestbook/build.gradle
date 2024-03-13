@@ -1,3 +1,9 @@
+buildscript {
+	ext {
+		queryDslVersion = "5.0.0"
+	}
+}
+
 plugins {
 	id 'java'
 	id 'war'
@@ -38,8 +44,29 @@ dependencies {
 	// https://mvnrepository.com/artifact/org.thymeleaf.extras/thymeleaf-extras-java8time
 	implementation group: 'org.thymeleaf.extras', name: 'thymeleaf-extras-java8time', version: '3.0.4.RELEASE'
 
+	implementation "com.querydsl:querydsl-jpa:${queryDslVersion}:jakarta"
+
+	annotationProcessor(
+
+			"jakarta.persistence:jakarta.persistence-api",
+
+			"jakarta.annotation:jakarta.annotation-api",
+
+			"com.querydsl:querydsl-apt:${queryDslVersion}:jakarta")
+
 }
 
 tasks.named('test') {
 	useJUnitPlatform()
 }
+
+
+sourceSets {
+	main {
+		java {
+			srcDirs = ["$projectDir/src/main/java", "$projectDir/build/generated"]
+		}
+	}
+}
+
+compileJava.dependsOn('clean')
