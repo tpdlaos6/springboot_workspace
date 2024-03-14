@@ -52,6 +52,7 @@ public interface BoardRepository  extends JpaRepository<Board,Long> {
             " WHERE b.bno = :bno")
     // select b.*, w.*
     // from board b left join tbl_member w
+    // on b.writer_email=w.email
     // left join reply r on r.board_bno=b.bno
     // where b.bno=?
     Object getBoardByBno(@Param("bno") Long bno);
