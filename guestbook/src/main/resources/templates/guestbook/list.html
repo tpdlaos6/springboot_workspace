@@ -6,6 +6,8 @@
 
     <th:block th:fragment="content">
 
+        <h1 class="mt-4">GuestBook List Page</h1>
+
         <form action="/guestbook/list" method="get" id="searchForm">
             <div class="input-group">
                 <input type="hidden" name="page" value = "1">
@@ -49,12 +51,12 @@
             <tbody>
             <tr th:each="dto : ${result.dtoList}" >
                 <th scope="row">
-                    <a th:href="@{/guestbook/read(gno = ${dto.gno},page= ${result.page})}">
+                    <a th:href="@{/guestbook/read(gno = ${dto.gno},page= ${result.page},type=${pageRequestDTO.type},keyword = ${pageRequestDTO.keyword})}">
                         [[${dto.gno}]]
                     </a>
                 </th>
                 <td>
-                    <a th:href="@{/guestbook/read(gno = ${dto.gno},page= ${result.page})}">
+                    <a th:href="@{/guestbook/read(gno = ${dto.gno},page= ${result.page},type=${pageRequestDTO.type},keyword = ${pageRequestDTO.keyword})}">
                     [[${dto.title}]]
                     </a>
                 </td>
@@ -88,7 +90,65 @@
         </ul>
         <!--페이징 처리.end------------------------------------------------------------------>
 
+
+        <!--글 등록 시 모달창------------------------------------------------------------------>
+        <div class="modal" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Modal title</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p>글 작성이 완료되었습니다.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--글 등록 시 모달창.end------------------------------------------------------------------>
+
+        <!--글 삭제 시 모달창------------------------------------------------------------------>
+        <div class="delmodal" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Modal title</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p>글 삭제가 완료되었습니다.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--글 삭제 시 모달창.end------------------------------------------------------------------>
+
+
         <script th:inline="javascript">
+            var msg=[[${msg}]];
+
+            if(msg){
+                $(".modal").modal();
+            }
+
+
+            var delmsg=[[${delmsg}]];
+
+            if(delmsg){
+                $(".delmodal").modal();
+            }
+
+
             var searchForm = $("#searchForm");
             $('.btn-search').click(function(e){
                 searchForm.submit();

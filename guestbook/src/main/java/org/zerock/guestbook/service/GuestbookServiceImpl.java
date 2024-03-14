@@ -15,6 +15,7 @@ import org.zerock.guestbook.entity.Guestbook;
 import org.zerock.guestbook.entity.QGuestbook;
 import org.zerock.guestbook.repository.GuestbookRepository;
 
+import java.util.Optional;
 import java.util.function.Function;
 
 @Service
@@ -26,9 +27,10 @@ public class GuestbookServiceImpl implements GuestbookService {
 
     @Override
     public Long register(GuestbookDTO dto) {
-        Guestbook entity=dtoToEntity(dto);
-        repository.save(entity);
-        return entity.getGno();
+        Guestbook entity=dtoToEntity(dto); // dto를 entity로 바꿔서
+        repository.save(entity); // save()함수를 이용해 insert
+                                // db테이블 만들때, gno에 auto_increament를 줬기에
+        return entity.getGno(); // entity 내에 바뀐 gno번호를 리턴
     }
 
 //    @Override
@@ -43,12 +45,43 @@ public class GuestbookServiceImpl implements GuestbookService {
     @Override
     public PageResultDTO<GuestbookDTO, Guestbook> getList(PageRequestDTO requestDTO) {
         Pageable pageable = requestDTO.getPageable(Sort.by("gno").descending());
+
         BooleanBuilder booleanBuilder = getSearch(requestDTO); //검색 조건 처리
+
         Page<Guestbook> result = repository.findAll(booleanBuilder, pageable); //Querydsl 사용
+
         Function<Guestbook, GuestbookDTO> fn = (entity -> entityToDto(entity));
         return new PageResultDTO<>(result, fn );
     }
 
+    @Override
+    public GuestbookDTO read(Long gno) {
+        //findById의 리턴값이 Optional
+        Optional<Guestbook> result=repository.findById(gno);
+        return result.isPresent()?entityToDto(result.get()):null;
+        // result가 값이 있으면(isPresent()), entity를 DTO로(entityToDto) 변환. 그렇지 않으면, 그대로(null)
+    }
+
+    @Override
+    public void modify(GuestbookDTO dto) {
+        //수정할 글 검색.
+        // 본래는 dto를 entity로 받아와서 수정하는 정석적인 방법도 있음.
+        // 그러나 여기에선 검색을 통해 title과 content만 찾아와서 바꾸는 방법으로 코딩.
+        Optional<Guestbook> result=repository.findById(dto.getGno());
+        if(result.isPresent()){
+            Guestbook entity=result.get();
+            entity.changeTitle(dto.getTitle()); // 제목 변경
+            entity.changeContent(dto.getContent()); // 내용 변경
+            // 날짜는 BaseEntity를 통해 자동으로 들어가도록 해놨기 때문에, 날짜를 변경하는 코드는 없음
+
+            repository.save(entity); // save()는, 데이터가 없을 땐 insert로 동작. 데이터가 있을 땐 update로 동작
+        }
+    }
+
+    @Override
+    public void remove(Long gno) {
+        repository.deleteById(gno);
+    }
 
 
     private BooleanBuilder getSearch(PageRequestDTO requestDTO){
