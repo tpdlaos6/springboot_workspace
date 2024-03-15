@@ -31,8 +31,9 @@ public class GuestBookController {
     public void list(PageRequestDTO pageRequestDTO, Model model){
         log.info("list............." + pageRequestDTO);
         model.addAttribute("result", service.getList(pageRequestDTO));
-
     }
+
+
 
     @GetMapping({"/read","/modify"})
     public void read(long gno, @ModelAttribute("requestDTO") PageRequestDTO requestDTO, Model model ){
@@ -44,7 +45,7 @@ public class GuestBookController {
     @PostMapping("/remove")
     public String remove(long gno, RedirectAttributes redirectAttributes){
         service.remove(gno);
-        redirectAttributes.addFlashAttribute("delmsg", gno);
+        redirectAttributes.addFlashAttribute("msg", gno);
 
         return "redirect:/guestbook/list";
 

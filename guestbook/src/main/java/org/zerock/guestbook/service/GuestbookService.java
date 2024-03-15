@@ -21,6 +21,7 @@ public interface GuestbookService {
     //삭제
     void remove(Long gno);
 
+    //DTO와 Entity클래스가 서로 간 간섭없이 독립적으로 처리할 수 있도록 각각 변경
     default Guestbook dtoToEntity(GuestbookDTO dto) { // DTO를 Entity로 변환
         Guestbook entity = Guestbook.builder()
                 .gno(dto.getGno())

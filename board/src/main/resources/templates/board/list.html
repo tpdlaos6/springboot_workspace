@@ -3,12 +3,19 @@
 
 <th:block th:replace="~{/layout/basic :: setContent(~{this::content} )}">
 
-
     <th:block th:fragment="content">
 
-        <h1 class="mt-4">GuestBook List Page</h1>
+        <h1 class="mt-4">Board List Page
+            <span>
+                <a th:href="@{/board/register}">
+                    <button type="button" class="btn btn-outline-primary float-right">REGISTER
+                    </button>
+                </a>
+            </span>
+        </h1>
 
-        <form action="/guestbook/list" method="get" id="searchForm">
+
+        <form action="/board/list" method="get" id="searchForm">
             <div class="input-group">
                 <input type="hidden" name="page" value = "1">
                 <div class="input-group-prepend">
@@ -30,52 +37,54 @@
         </form>
 
 
-        <h1>List
-            <span>
-                <a th:href="@{/guestbook/register}">
-                   <button type="button" class="btn btn-outline-primary float-right" style="margin-top:10px">REGISTER
-                   </button>
-                </a>
-            </span>
-        </h1>
 
         <table class="table table-striped">
             <thead>
             <tr>
                 <th scope="col">#</th>
-                <th scope="col" style="width:50% !important">Title</th>
+                <th scope="col">Title</th>
                 <th scope="col">Writer</th>
                 <th scope="col">Regdate</th>
             </tr>
             </thead>
             <tbody>
+
             <tr th:each="dto : ${result.dtoList}" >
                 <th scope="row">
-                    <a th:href="@{/guestbook/read(gno = ${dto.gno},page= ${result.page},type=${pageRequestDTO.type},keyword = ${pageRequestDTO.keyword})}">
-                        [[${dto.gno}]]
+                    <a th:href="@{/board/read(bno = ${dto.bno},
+                    page= ${result.page},
+                    type=${pageRequestDTO.type} ,
+                    keyword = ${pageRequestDTO.keyword})}">
+                        [[${dto.bno}]]
                     </a>
                 </th>
                 <td>
-                    <a th:href="@{/guestbook/read(gno = ${dto.gno},page= ${result.page},type=${pageRequestDTO.type},keyword = ${pageRequestDTO.keyword})}">
-                    [[${dto.title}]]
+                    <a th:href="@{/board/read(bno = ${dto.bno},
+                    page= ${result.page},
+                    type=${pageRequestDTO.type} ,
+                    keyword = ${pageRequestDTO.keyword})}">
+                       [[${dto.title}]] ----------------  [<b th:text="${dto.replyCount}"></b>]
                     </a>
                 </td>
-                <td>[[${dto.writer}]]</td>
+                <td>[[${dto.writerName}]] <small>[[${dto.writerEmail}]]</small> </td>
                 <td>[[${#temporals.format(dto.regDate, 'yyyy/MM/dd')}]]</td>
             </tr>
+
+
+
             </tbody>
         </table>
 
-        <!--페이징 처리------------------------------------------------------------------>
         <ul class="pagination h-100 justify-content-center align-items-center">
+
             <li class="page-item " th:if="${result.prev}">
-                <a class="page-link" th:href="@{/guestbook/list(page= ${result.start -1},
+                <a class="page-link" th:href="@{/board/list(page= ${result.start -1},
                     type=${pageRequestDTO.type} ,
                     keyword = ${pageRequestDTO.keyword} ) }" tabindex="-1">Previous</a>
             </li>
 
             <li th:class=" 'page-item ' + ${result.page == page?'active':''} " th:each="page: ${result.pageList}">
-                <a class="page-link" th:href="@{/guestbook/list(page = ${page} ,
+                <a class="page-link" th:href="@{/board/list(page = ${page} ,
                    type=${pageRequestDTO.type} ,
                    keyword = ${pageRequestDTO.keyword}  )}">
                     [[${page}]]
@@ -83,15 +92,14 @@
             </li>
 
             <li class="page-item" th:if="${result.next}">
-                <a class="page-link" th:href="@{/guestbook/list(page= ${result.end + 1} ,
+                <a class="page-link" th:href="@{/board/list(page= ${result.end + 1} ,
                     type=${pageRequestDTO.type} ,
                     keyword = ${pageRequestDTO.keyword} )}">Next</a>
             </li>
+
         </ul>
-        <!--페이징 처리.end------------------------------------------------------------------>
 
 
-        <!--글 등록 시 모달창------------------------------------------------------------------>
         <div class="modal" tabindex="-1" role="dialog">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
@@ -102,57 +110,40 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        <p>작업이 완료되었습니다.</p>
+                        <p>Modal body text goes here.</p>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary">Save changes</button>
                     </div>
                 </div>
             </div>
         </div>
-        <!--글 등록 시 모달창.end------------------------------------------------------------------>
-
-        <!--글 삭제 시 모달창------------------------------------------------------------------>
-<!--        <div class="delmodal" tabindex="-1" role="dialog">-->
-<!--            <div class="modal-dialog" role="document">-->
-<!--                <div class="modal-content">-->
-<!--                    <div class="modal-header">-->
-<!--                        <h5 class="modal-title">Modal title</h5>-->
-<!--                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">-->
-<!--                            <span aria-hidden="true">&times;</span>-->
-<!--                        </button>-->
-<!--                    </div>-->
-<!--                    <div class="modal-body">-->
-<!--                        <p>글 삭제가 완료되었습니다.</p>-->
-<!--                    </div>-->
-<!--                    <div class="modal-footer">-->
-<!--                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>-->
-<!--                    </div>-->
-<!--                </div>-->
-<!--            </div>-->
-<!--        </div>-->
-        <!--글 삭제 시 모달창.end------------------------------------------------------------------>
-
 
         <script th:inline="javascript">
-            var msg=[[${msg}]];
+
+            var msg = [[${msg}]];
+
+            console.log(msg);
 
             if(msg){
                 $(".modal").modal();
             }
-
-
-<!--            var delmsg=[[${delmsg}]];-->
-
-<!--            if(delmsg){-->
-<!--                $(".delmodal").modal();-->
-<!--            }-->
-
-
             var searchForm = $("#searchForm");
+
             $('.btn-search').click(function(e){
+
                 searchForm.submit();
+
             });
+
+            $('.btn-clear').click(function(e){
+
+                searchForm.empty().submit();
+
+            });
+
+
         </script>
 
 
@@ -160,5 +151,3 @@
     </th:block>
 
 </th:block>
-
-</html>
