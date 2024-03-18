@@ -8,6 +8,18 @@ import org.zerock.board.entity.Member;
 
 public interface BoardService {
 
+    //등록
+    Long register(BoardDTO dto);
+
+    //상세보기
+    BoardDTO get(Long bno);
+
+    //수정
+    void modify(BoardDTO boardDTO);
+
+    //삭제(댓글과 함께)
+    void removeWithReplies(Long bno);
+
     PageResultDTO<BoardDTO, Object[]> getList(PageRequestDTO pageRequestDTO);
     default Board dtoToEntity(BoardDTO dto){
 
@@ -40,5 +52,6 @@ public interface BoardService {
         return boardDTO;
 
     }
+
 
 }

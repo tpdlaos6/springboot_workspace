@@ -43,7 +43,7 @@ public interface BoardRepository  extends JpaRepository<Board,Long>, SearchBoard
     // left join reply r
     // on r.board_bno=b.bno
     // group by b.bno
-    Page<Object[]> getBoardWithReplyCount(Pageable pageable);
+    Page<Object[]> getBoardWithReplyCount(Pageable pageable); // 목록이므로, Object[] 배열에 저장
 
 
     // 1건만. 즉, 상세보기
@@ -56,5 +56,5 @@ public interface BoardRepository  extends JpaRepository<Board,Long>, SearchBoard
     // on b.writer_email=w.email
     // left join reply r on r.board_bno=b.bno
     // where b.bno=?
-    Object getBoardByBno(@Param("bno") Long bno);
+    Object getBoardByBno(@Param("bno") Long bno); // 1건 이므로 Object에 저장
 }

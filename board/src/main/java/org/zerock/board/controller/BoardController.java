@@ -5,7 +5,11 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.zerock.board.dto.BoardDTO;
 import org.zerock.board.dto.PageRequestDTO;
 import org.zerock.board.service.BoardService;
 
@@ -19,5 +23,51 @@ public class BoardController {
     @GetMapping("list")
     public void list(PageRequestDTO pageRequestDTO, Model model){
         model.addAttribute("result", boardService.getList(pageRequestDTO));
+    }
+
+
+    @GetMapping("/register")
+    public void register(){}
+
+    @PostMapping("/register")
+    public String registerPost(BoardDTO dto, RedirectAttributes redirectAttributes){
+        Long bno = boardService.register(dto);
+        redirectAttributes.addFlashAttribute("msg", bno); // bno를 "msg"라는 이름으로 담아서 전달
+        return "redirect:/board/list"; // 목록으로 이동
+    }
+
+    @GetMapping({"/read", "/modify" })
+    //PageRequestDTO가 "requestDTO"에 저장되어 전달.
+    public void read(@ModelAttribute("requestDTO") PageRequestDTO pageRequestDTO, Long bno, Model model){
+        BoardDTO boardDTO = boardService.get(bno);
+
+        model.addAttribute("dto", boardDTO);
+    }
+
+    @PostMapping("/modify")
+    public String modify(BoardDTO dto, @ModelAttribute("requestDTO") PageRequestDTO requestDTO,
+                         RedirectAttributes redirectAttributes){ // redirectAttributes. 상세보기로 주소가 바뀌기 때문에 사용
+        boardService.modify(dto);
+
+        redirectAttributes.addAttribute("page",requestDTO.getPage());
+        redirectAttributes.addAttribute("type",requestDTO.getType());
+        redirectAttributes.addAttribute("keyword",requestDTO.getKeyword());
+        redirectAttributes.addAttribute("bno",dto.getBno());
+
+        return "redirect:/board/read";
+    }
+
+    @PostMapping("/remove")
+    public String remove(long bno, RedirectAttributes redirectAttributes){
+
+
+        log.info("bno: " + bno);
+
+        boardService.removeWithReplies(bno);
+
+        redirectAttributes.addFlashAttribute("msg", bno);
+
+        return "redirect:/board/list";
+
     }
 }

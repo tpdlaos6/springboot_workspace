@@ -75,6 +75,17 @@
             </tbody>
         </table>
 
+<!--        select태그로 한 페이지에 보이는 글 수 -->
+        <div class="show-amount float-left">
+            <select class="showAmount" name="type">
+                <option value="">-------</option>
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="20">20</option>
+            </select>
+        </div>
+<!--        select태그로 한 페이지에 보이는 글 수.end -->
+
         <ul class="pagination h-100 justify-content-center align-items-center">
 
             <li class="page-item " th:if="${result.prev}">
@@ -86,7 +97,7 @@
             <li th:class=" 'page-item ' + ${result.page == page?'active':''} " th:each="page: ${result.pageList}">
                 <a class="page-link" th:href="@{/board/list(page = ${page} ,
                    type=${pageRequestDTO.type} ,
-                   keyword = ${pageRequestDTO.keyword}  )}">
+                   keyword = ${pageRequestDTO.keyword},size=${pageRequestDTO.size}  )}">
                     [[${page}]]
                 </a>
             </li>
@@ -96,6 +107,7 @@
                     type=${pageRequestDTO.type} ,
                     keyword = ${pageRequestDTO.keyword} )}">Next</a>
             </li>
+
 
         </ul>
 
@@ -120,28 +132,41 @@
             </div>
         </div>
 
+
         <script th:inline="javascript">
 
-            var msg = [[${msg}]];
-
-            console.log(msg);
-
-            if(msg){
-                $(".modal").modal();
-            }
-            var searchForm = $("#searchForm");
-
-            $('.btn-search').click(function(e){
-
-                searchForm.submit();
-
+        // select태그로 한 페이지에 보이는 글 수
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelector('.showAmount').addEventListener('change', function() {
+                let selectAmount = this.value;
+                let url = new URL(window.location.href);
+                url.searchParams.set('size', selectAmount);
+                window.location.href = url.href;
             });
+        });
 
-            $('.btn-clear').click(function(e){
 
-                searchForm.empty().submit();
 
-            });
+        var msg = [[${msg}]];
+
+        console.log(msg);
+
+        if(msg){
+            $(".modal").modal();
+        }
+        var searchForm = $("#searchForm");
+
+        $('.btn-search').click(function(e){
+
+            searchForm.submit();
+
+        });
+
+        $('.btn-clear').click(function(e){
+
+            searchForm.empty().submit();
+
+        });
 
 
         </script>
