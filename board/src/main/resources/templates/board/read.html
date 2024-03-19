@@ -41,6 +41,260 @@
             <button type="button" class="btn btn-info">List</button>
         </a>
 
+
+        <!--댓글 목록------------------------------------------------------------------->
+        <div >
+            <div class="mt-4">
+                <h5 ><span class="badge badge-info addReply" style="cursor:pointer;">Add Reply</span> </h5>
+                <h5 ><span class="badge badge-secondary replyCount" style="cursor:pointer;"> Reply Count  [[${dto.replyCount}]]</span> </h5>
+            </div>
+            <div class="list-group replyList">
+            </div>
+        </div>
+
+        <!--댓글 목록.end------------------------------------------------------------------->
+
+        <!--댓글 작성 modal창----------------------------------------------------------->
+        <div class="modal" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Modal title</h5>
+
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <input class="form-control"  type="text" name="replyText" placeholder="Reply Text...">
+                        </div>
+                        <div class="form-group">
+                            <input class="form-control"  type="text" name="replyer" placeholder="Replyer">
+                            <input type="hidden" name="rno" >
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger replyRemove">Remove</button>
+                        <button type="button" class="btn btn-warning replyModify">Modify</button>
+                        <button type="button" class="btn btn-primary replySave">Save</button>
+                        <button type="button" class="btn btn-outline-secondary replyClose" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--댓글 작성 modal창.end----------------------------------------------------------->
+
+
+        <script th:inline="javascript">
+            /////////////////숫자 페이징처리//////////////////////////////////////////////////////////////
+                            function loadJSONData2(start,end) {
+                                $("#stop").hide();
+
+                                $.getJSON('/replies/board/'+bno, function(arr){
+
+                                    console.log(arr);
+
+
+
+                                    $('#replycount2').html("<b>"+arr.length+"</b>개의 댓글");
+
+                                    var str ="";
+
+                                    var temp2 = [];
+                                    var i = 0;
+                                    for(var h =start ; h <end ;h++){
+                                        if(h>=arr.length){
+                                            continue;
+                                        };
+                                        temp2[i] = arr[h];
+                                        i++;
+                                    };
+                                    console.log(temp2);
+
+                                    $.each(temp2, function(idx, reply){
+                                        console.log(reply);
+                                        str += '    <div class="card-body" data-rno="'+reply.rno+'"><span><i class="fa-solid fa-list float-right"  style="cursor:pointer;"></i></span>';
+                                        str += '    <p class="card-text">'+ formatTime(reply.regDate) +'</p>';
+                                        str += '    <h6 class="card-subtitle mb-2 text-muted">'+reply.replyer.slice(0,4)+'***'+'</h6>';
+                                        str += '    <h5 class="card-title">'+reply.text+'</h5><hr/>';
+                                        str += '    </div>';
+                                    })
+
+                                    var str2='';
+                                     for(var j = 1 ; j <= arr.length/5 +1;j++){
+                                       str2 += '<button class="page float-right" value="'+j+'" style="width:40px;">' +j+ '</button>';
+                                       };
+
+                                    document.getElementById('paging').innerHTML = str2;
+                                    listGroup.html(str);
+
+
+                                    if(count*5/arr.length >=1){
+                                        $("#more").hide();
+                                        $("#stop").show();
+                                    }
+                                });
+                            }
+                            ////////////////////////////////////////////////////////////////////////////////////////
+
+                            $("#paging").on("click",".page",function(){
+                               console.log($(this).val());
+                               var aa =$(this).val();
+                               start = aa*5-4;
+                               end = aa*5+1;
+
+                                loadJSONData2(start,end);
+
+                            });
+
+
+
+
+                /*댓글 페이징 처리******************************************************************************************************/
+                /*댓글 페이징 처리************************************************************************/
+                /*댓글 페이징 처리************************************************************************/
+
+                $(document).ready(function(){
+                    var bno=[[${dto.bno}]]; //부모글 번호
+                    var listGroup=$(".replyList"); //댓글 목록 출력되는 위치
+
+                    function formatTime(str){ // 날짜 처리를 위한 함수
+                        var date=new Date(str);
+                        return date.getFullYear()+"/"+(date.getMonth()+1)+"/"+date.getDate()+" "+date.getHours()+":"+date.getMinutes();
+                    }
+                    function loadJSONData(){
+                        $.getJSON("/replies/board/"+bno,function(arr){ // getJSON 요청. 서버에서 응답하면 arr이라는 배열형태로 넘어옴.
+
+                            var str="";
+
+                            // 서버에서 댓글을 받아오는 게 arr(배열) 형식이므로, arr의 length값을 넣으면 리플이 추가 및 삭제될때마다 댓글 숫자가 변하게 코딩할 수 있음
+                            $(".replyCount").html(" Reply Count "+arr.length);
+
+                            $.each(arr,function(idx,reply){ // arr배열을 each로 하나씩 처리. 배열에서 꺼내다가 하나씩 reply에 넣어서 출력
+                                //data-rno="'+reply.rno+'" => date-rno 속성 안에 reply.rno를 넣어놓음
+                                str += ' <div class="card-body" data-rno="'+reply.rno+'"><b>'+reply.rno +'</b>';
+                                str += ' <h5 class="card-title">'+reply.text+'</h5>';
+                                str += ' <h6 class="card-subtitle mb-2 text-muted">'+reply.replyer+'</h6>';
+                                str += ' <p class="card-text">'+ formatTime(reply.regDate) +'</p>';
+                                str += ' </div>';
+                            })
+                            listGroup.html(str); // each문이 끝나면, listGroup의 html함수를 써서 탈출.
+                        });
+                    }
+
+                    //처음부터 댓글 목록 출력
+                    loadJSONData();
+
+
+                    /*이벤트처리*************************************************************************/
+                    //댓글번호 클릭
+                    //$(".replyCount").click(function(){
+                    //   loadJSONData();
+                    //});
+
+                    //댓글등록버튼 클릭(모달창 열림)
+                    var modal=$('.modal')
+                    $(".addReply").click(function () {
+                        modal.modal("show");
+
+                        $('input[name="replyText"]').val(''); // 댓글 입력 부분 초기화
+                        $('input[name="replyer"]').val(''); // 댓글 입력 부분 초기화
+
+                        $(".modal-footer .btn").hide(); // 모달 내에 모든 버튼 숨기기
+                        $(".replySave, replyClose").show(); // 필요한 버튼만 보이기
+
+                    });
+
+                    //댓글 등록 save버튼 클릭
+                    $(".replySave").click(function(){
+                        var reply={ // reply라는 객체 생성(ajax함수는 객체가 파라미터로 넘어가는 형태이므로, 객체 생성 필수!!!!)
+                            bno:bno,
+                            text:$('input[name="replyText"]').val(),
+                            replyer: $('input[name="replyer"]').val()
+                        }
+                        $.ajax({
+                            url: '/replies/',               // 서버주소
+                            method: 'post',                // 전송 방식
+                            data:  JSON.stringify(reply), // 서버로 보낼 데이터. reply를 JSON으로 변환해서 보내겠다.
+                            contentType: 'application/json; charset=utf-8', // 서버로 전송될 데이터 타입
+                            dataType: 'json',            // 서버에서 날라올 데이터 타입. 이거도 json으로 하겠다.
+                            success: function(data){    // 서버에서 응답이 왔을때(success), 날라온 데이터를 data에 저장 후,
+                                var newRno = parseInt(data);            // 저장된 data를 parseInt. 즉, 정수로 변환해서 newRno에 담은 뒤
+                                alert(newRno +"번 댓글이 등록되었습니다.") // alert 띄움
+                                modal.modal('hide');                  // 그 뒤 모달 닫고
+                                loadJSONData();                      // 목록 갱신
+                            }
+                        })
+                    })
+
+
+                    $('.replyList').on("click", ".card-body", function(){
+
+                        var rno = $(this).data("rno");
+
+                        $("input[name='replyText']").val( $(this).find('.card-title').html()); // .html을 읽겠다는... .text로 코딩해도 잘 읽어옴.
+                        $("input[name='replyer']").val( $(this).find('.card-subtitle').html());
+                        $("input[name='rno']").val(rno);
+
+                        $(".modal-footer .btn").hide();                      //모든 버튼 숨긴 후,
+                        $(".replyRemove, .replyModify, .replyClose").show(); // remove,modify,close버튼만 노출(..걍 save만 hide해도 됨)
+
+                        modal.modal('show');
+                    });
+
+
+                    //댓글 삭제 버튼 클릭
+                    $(".replyRemove").on("click", function(){
+
+                        var rno = $("input[name='rno']").val(); //모달 창에 보이는 댓글 번호 hidden처리되어 있음
+
+                        $.ajax({
+                            url: '/replies/' + rno,
+                            method: 'delete',   // 전송방식 : delete
+
+                            success: function(result){            // 서버에서 응답이 왔을 때,
+                                if(result ==='success'){         // result값이 success라면,
+                                    alert("댓글이 삭제되었습니다"); // alert 발생 후,
+                                    modal.modal('hide');       // 모달창 숨기고
+                                    loadJSONData();           // 리로드
+                                }
+                            }
+                        })
+                    });
+
+                    //댓글 수정 버튼 클릭
+                    $(".replyModify").click(function() {        //클릭했을 때,
+                        var rno = $("input[name='rno']").val();// 댓글 번호 넣고
+
+                        var reply = {                          //서버로 전송할 reply 객체 생성
+                            rno: rno,
+                            bno: bno,
+                            text: $('input[name="replyText"]').val(),
+                            replyer: $('input[name="replyer"]').val()
+                        }
+
+                        $.ajax({
+                            url: '/replies/' + rno,
+                            method: 'put',
+                            data:  JSON.stringify(reply),
+                            contentType: 'application/json; charset=utf-8',
+                            success: function(result){
+
+                                console.log("RESULT: " + result);
+
+                                if(result ==='success'){
+                                    alert("댓글이 수정되었습니다");
+                                    modal.modal('hide');
+                                    loadJSONData();
+                                }
+                            }
+                        });
+                    });
+                });
+
+
+        </script>
     </th:block>
 
 </th:block>

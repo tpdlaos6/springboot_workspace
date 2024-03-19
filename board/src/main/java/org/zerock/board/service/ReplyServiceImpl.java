@@ -2,7 +2,9 @@ package org.zerock.board.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.zerock.board.dto.Criteria;
 import org.zerock.board.dto.ReplyDTO;
+import org.zerock.board.dto.ReplyPageDTO;
 import org.zerock.board.entity.Board;
 import org.zerock.board.entity.Reply;
 import org.zerock.board.repository.ReplyRepository;
@@ -13,6 +15,7 @@ import java.util.stream.Collectors;
 @Service // 서비스impl은 꼭 붙여야
 @RequiredArgsConstructor // 자동 주입을 위한
 public class ReplyServiceImpl implements ReplyService{
+
     private final ReplyRepository replyRepository;
 
     @Override
@@ -37,6 +40,14 @@ public class ReplyServiceImpl implements ReplyService{
 
     @Override
     public void remove(Long rno) {
-        replyRepository.deleteByBno(rno);
+        replyRepository.deleteById(rno);
+    }
+
+    @Override
+    public ReplyPageDTO getListPage(Criteria cri, Long bno) {
+        return new ReplyPageDTO(
+                replyRepository.getCountByBno(bno),
+                replyRepository.getListWithPaging(cri,bno)
+        );
     }
 }

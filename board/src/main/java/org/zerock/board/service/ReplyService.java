@@ -1,6 +1,8 @@
 package org.zerock.board.service;
 
+import org.zerock.board.dto.Criteria;
 import org.zerock.board.dto.ReplyDTO;
+import org.zerock.board.dto.ReplyPageDTO;
 import org.zerock.board.entity.Board;
 import org.zerock.board.entity.Reply;
 
@@ -15,9 +17,13 @@ public interface ReplyService {
 
     void remove(Long rno); //댓글 삭제
 
+    public ReplyPageDTO getListPage(Criteria cri, Long bno);
+
+
     //ReplyDTO를 Reply객체로 변환 Board객체의 처리가 수반됨
     default Reply dtoToEntity(ReplyDTO replyDTO){
         Board board = Board.builder().bno(replyDTO.getBno()).build();
+
         Reply reply = Reply.builder()
                 .rno(replyDTO.getRno())
                 .text(replyDTO.getText())
@@ -29,6 +35,7 @@ public interface ReplyService {
 
     //Reply객체를 ReplyDTO로 변환 Board 객체가 필요하지 않으므로 게시물 번호만
     default ReplyDTO entityToDTO(Reply reply){
+
         ReplyDTO dto = ReplyDTO.builder()
                 .rno(reply.getRno())
                 .text(reply.getText())

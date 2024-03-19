@@ -36,6 +36,15 @@
             </div>
         </form>
 
+<!--        <form action="/board/list" method="get" id="showForm">-->
+<!--            <select class="showAmount">-->
+<!--                <option value="" th:selected="${pageRequestDTO.size == null}">-&#45;&#45;&#45;&#45;&#45;&#45;</option>-->
+<!--                <option value="5" th:selected="${pageRequestDTO.size==5}">5</option>-->
+<!--                <option value="10" th:selected="${pageRequestDTO.size==10}">10</option>-->
+<!--                <option value="20" th:selected="${pageRequestDTO.size==20}">20</option>-->
+<!--            </select>-->
+<!--        </form>-->
+
 
 
         <table class="table table-striped">
@@ -76,14 +85,14 @@
         </table>
 
 <!--        select태그로 한 페이지에 보이는 글 수 -->
-        <div class="show-amount float-left">
-            <select class="showAmount" name="type">
-                <option value="">-------</option>
-                <option value="5">5</option>
-                <option value="10">10</option>
-                <option value="20">20</option>
-            </select>
-        </div>
+<!--        <div class="show-amount float-left">-->
+<!--            <select class="showAmount" name="type">-->
+<!--                <option value="">-&#45;&#45;&#45;&#45;&#45;&#45;</option>-->
+<!--                <option value="5">5</option>-->
+<!--                <option value="10">10</option>-->
+<!--                <option value="20">20</option>-->
+<!--            </select>-->
+<!--        </div>-->
 <!--        select태그로 한 페이지에 보이는 글 수.end -->
 
         <ul class="pagination h-100 justify-content-center align-items-center">
@@ -136,15 +145,18 @@
         <script th:inline="javascript">
 
         // select태그로 한 페이지에 보이는 글 수
-        document.addEventListener('DOMContentLoaded', function () {
-            document.querySelector('.showAmount').addEventListener('change', function() {
-                let selectAmount = this.value;
-                let url = new URL(window.location.href);
-                url.searchParams.set('size', selectAmount);
-                window.location.href = url.href;
-            });
-        });
+<!--        document.addEventListener('DOMContentLoaded', function () {-->
+<!--            document.querySelector('.showAmount').addEventListener('change', function() {-->
+<!--                let selectAmount = this.value;-->
+<!--                let url = new URL(window.location.href);-->
+<!--                url.searchParams.set('size', selectAmount);-->
+<!--                window.location.href = url.href;-->
+<!--            });-->
+<!--        });-->
 
+        $('.showAmount').change(function(e){
+            $('#showForm').submit();
+        });
 
 
         var msg = [[${msg}]];

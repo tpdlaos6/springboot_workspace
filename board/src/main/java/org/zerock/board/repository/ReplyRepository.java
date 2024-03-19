@@ -3,6 +3,9 @@ package org.zerock.board.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.zerock.board.dto.Criteria;
+import org.zerock.board.dto.ReplyDTO;
 import org.zerock.board.entity.Board;
 import org.zerock.board.entity.Reply;
 
@@ -18,4 +21,10 @@ public interface ReplyRepository extends JpaRepository<Reply,Long> {
 
     List<Reply> getRepliesByBoardOrderByRno(Board board);
     // getRepliesByBoardOrderByRno => select * from reply where bno=? order by rno
+
+    //목록 with paging. parameter가 2개 이상일 때 @Param사용 필요.
+    public List<ReplyDTO> getListWithPaging(@Param("cri") Criteria cri, @Param("bno") Long bno);
+
+    //댓글 개수
+    public int getCountByBno(Long bno);
 }
