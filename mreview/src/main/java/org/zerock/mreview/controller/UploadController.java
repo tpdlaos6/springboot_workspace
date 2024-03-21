@@ -95,7 +95,7 @@ public class UploadController {
     }
 
     //image를 찾아서 byte[]로 리턴
-    @GetMapping("/display ")
+    @GetMapping("/display") // 썸네일 나오는 거
     public ResponseEntity<byte[]> getFile(String fileName) { // 이미지를 읽어서 byte형태의 배열로 보냄
         ResponseEntity<byte[]> result = null;
         try {

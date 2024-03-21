@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<th:block th:replace="~{/layout/basic :: setContent(~{this::content} )}">
+    <th:block th:fragment="content">
+        <h1>Register</h1>
+        <form th:action="@{/movie/register}" th:method="post">
+            <div class="form-group">
+                <label>Title</label>
+                <input type="text" class="form-control" name="title" placeholder="Title">
+            </div>
+            <div class="form-group fileForm">
+                <label>Image Files</label>
+                <div class="custom-file">
+                    <input type="file"  class="custom-file-input files" id="fileInput" multiple>
+                    <label class="custom-file-label" data-browse="Browse"></label>
+                </div>
+            </div>
+            <div class="box">
+
+            </div>
+
+            <style>
+                .uploadResult {
+                    width: 100%;
+                    background-color: gray;
+                    margin-top: 10px;
+                }
+
+                .uploadResult ul {
+                    display: flex;
+                    flex-flow: row;
+                    justify-content: center;
+                    align-items: center;
+                    vertical-align: top;
+                    overflow: auto;
+                }
+
+                .uploadResult ul li {
+                    list-style: none;
+                    padding: 10px;
+                    margin-left: 2em;
+                }
+
+                .uploadResult ul li img {
+                    width: 100px;
+                }
+            </style>
+
+            <!--업로드 된 이미지 목록------------------------------------------------------------------>
+
+            <div class="uploadResult">
+                <ul>
+                    <!--썸네일이 출력되는 곳-->
+                </ul>
+            </div>
+            <!--업로드 된 이미지 목록.end------------------------------------------------------------------>
+            <button class="btn btn-primary">등록</button>
+        </form>
+
+        <script>
+            $(document).ready(function(){
+              // 정규식으로 표현. 마지막 점(.)뒤에 jpg|png|gif 이 확장자들이 오는 파일들을 regex에 담음
+                var regex = new RegExp("(.*?)\.(jpg|png|gif)$");
+                var maxSize = 10485760; //10MB
+
+                function checkExtension(fileName, fileSize){
+
+                    if(fileSize >= maxSize){
+                        alert("파일 사이즈 초과");
+                        return false;
+                    }
+
+                    if(!regex.test(fileName)){
+                        alert("jpg, png, gif 파일만 업로드할 수 있습니다.");
+                        return false;
+                    }
+                    return true;
+                }
+
+                $("#fileInput").on("change", function() {
+
+                    var fileName = $(this).val().split("\\").pop(); // pop은 스택에서 쓰는 꺼내는 개념. 즉, 맨 뒤에걸 꺼낸다는 의미
+                    // this의 val값을 split해서 꺼낸다(pop)는 의미
+                    $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
+                    //siblings. 형제를 찾는다. 즉, 20LINE을 말함. 이게 selected되면 fileName이라는 html을 넣겠다.
+                    // 즉, 20line의 비어있는 <label>태그 안에 fileName이라는 html글자를 넣겠다는 말
+
+                    var formData = new FormData(); // form에 대응되는 객체
+                    var inputFile = $(this);
+                    var files = inputFile[0].files;
+                    var appended = false; // 첨부파일 선택 유무 체크 flag
+
+                    for (var i = 0; i < files.length; i++) {
+                        if(!checkExtension(files[i].name, files[i].size) ){
+                            return false;
+                        }
+                        formData.append("uploadFiles", files[i]);
+                        appended = true; // 첨부파일 선택 true
+                    }
+
+                    //첨부파일을 선택하지 않았으면, upload를 하지 않는다. 즉 그냥 종료한다.
+                    if (!appended) {
+                    return;
+                    }
+
+                    //실제 업로드 부분
+                    //ajax 방식으로 파일 전송
+                    $.ajax({
+                        url: '/uploadAjax', // 서버 주소
+                        processData: false, // 파일 전송 시 설정
+                        contentType: false, // 파일 전송 시 설정
+                        data: formData,     // 서버로 전송되는 데이터
+                        type: 'POST',       // 전송방식
+                        dataType:'json',    // 서버에서 넘어오는 데이터 형식
+                        success: function(result){ // 서버에서 데이터가 전상적으로 넘어오면
+                            showResult(result);    // 썸네일 목록 출력
+                            $(".custom-file-input").val("");    // input type="file" 초기화
+                            $(".custom-file-label").html("");   // input type="file" 실제 화면 초기화
+                        }
+                    }); //$.ajax
+                }); //end change event
+
+                function showResult(uploadResultArr){
+                    var uploadUL = $(".uploadResult ul"); // 썸네일이 출력되는 위치
+                    var str ="";
+                    $(uploadResultArr).each(function(i, obj) {
+                        str += "<li data-name='" + obj.fileName + "' data-path='"+obj.folderPath+"' data-uuid='"+obj.uuid+"'>";
+                        str + " <div>";
+                        str += "<button type='button' data-file='" + obj.imageURL + "' "
+                        str += "class='btn-warning btn-sm'>&times;</button><br>";
+                        str += "<img src='/display?fileName=" + obj.thumbnailURL + "'>";
+                        str += "</div>";
+                        str + "</li>";
+                    });
+                    uploadUL.append(str);
+                }
+
+                $(".uploadResult ").on("click", "li button", function(){
+
+                    var targetFile = $(this).data("file");
+                    var targetLi = $(this).closest("li"); // x버튼의 부모인, li태그를 찾아서, tagerLi에 담고
+
+                    $.ajax({
+                        url: '/removeFile',             // 서버 주소
+                        data: {fileName: targetFile}, // 전송되는 데이터
+                        dataType:'text',            // 서버에서 넘어오는 데이터 타입
+                        type: 'POST',               // 전송방식
+                        success: function(result){ // 서버로부터 정상적으로 응답이 오면
+                            if(result=="true"){
+                                alert("이미지가 삭제되었습니다.")
+                            }
+                            targetLi.remove();  // 화면에서 썸네일 삭제
+                        }
+                    });
+                });
+
+                // 등록버튼 눌렀을 때
+                $(".btn-primary").on("click", function(e) {
+                    e.preventDefault(); // 전송 방지
+                    var str = "";
+                    $(".uploadResult li").each(function(i,obj){
+                        var target = $(obj);
+                        str += "<input type='hidden' name='imageDTOList["+i+"].imgName' value='"+target.data('name') +"'>";
+                        str += "<input type='hidden' name='imageDTOList["+i+"].path' value='"+target.data('path')+"'>";
+                        str += "<input type='hidden' name='imageDTOList["+i+"].uuid' value='"+target.data('uuid')+"'>";
+                    });
+
+                    //태그들이 추가된 것을 확인한 후에 comment를 제거
+                    $(".box").html(str); // hidden 태그 출력
+                    $("form").submit(); // 폼 전송
+                });
+            })
+
+        </script>
+    </th:block>
+</th:block>
