@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<th:block th:replace="~{/layout/basic :: setContent(~{this::content} )}">
+    <th:block th:fragment="content">
+        <h1>Read</h1>
+
+        <div class="form-group">
+            <label>Title</label>
+            <input type="text" class="form-control" name="title" th:value="${dto.title}" readonly>
+        </div>
+        <div class="form-group">
+            <label>Review Count</label>
+            <input type="text" class="form-control" name="reviewCnt" th:value="${dto.reviewCnt}" readonly>
+        </div>
+        <div class="form-group">
+            <label>Avg</label>
+            <input type="text" class="form-control" name="avg" th:value="${dto.avg}" readonly>
+        </div>
+
+        <div class="box">
+
+        </div>
+
+        <style>
+            .uploadResult {
+                width: 100%;
+                background-color: gray;
+                margin-top: 10px;
+            }
+
+            .uploadResult ul {
+                display: flex;
+                flex-flow: row;
+                justify-content: center;
+                align-items: center;
+                vertical-align: top;
+                overflow: auto;
+            }
+
+            .uploadResult ul li {
+                list-style: none;
+                padding: 10px;
+                margin-left: 2em;
+            }
+
+            .uploadResult ul li img {
+                width: 100px;
+            }
+        </style>
+
+    <!--업로드 된 이미지 목록------------------------------------------------------------------>
+        <div class="uploadResult">
+            <ul>
+                <li th:each="movieImage: ${dto.imageDTOList}" th:data-file="${movieImage.getThumbnailURL()}">
+                    <img th:if="${movieImage.path != null}" th:src="|/display?fileName=${movieImage.getThumbnailURL()}|">
+                </li>
+            </ul>
+        </div>
+        <!--업로드 된 이미지 목록.end------------------------------------------------------------------>
+        <button type="button" class="btn btn-primary">
+            리뷰 갯수 <span class="badge badge-light">[[${dto.reviewCnt}]]</span>
+        </button>
+
+        <button type="button" class="btn btn-info addReviewBtn">
+            리뷰 등록
+        </button>
+
+    <!--리뷰 목록-------------------------------------------------------------------------------->
+        <div class="list-group reviewList">
+            <!--이 자리에 리뷰 출력-->
+        </div>
+    <!--리뷰 목록.end---------------------------------------------------------------------------->
+
+    <!--리뷰 모달창------------------------------------------------------------------------------->
+        <div class="reviewModal modal" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Movie Review</h5>
+
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label >Reviewer ID</label>
+                            <input type="text" class="form-control" name="mid" >
+                        </div>
+                        <div class="form-group" id="divGrade">
+                            <label >Grade <span class="grade"></span></label>
+                            <div class='starrr'></div>
+                        </div>
+                        <div class="form-group">
+                            <label >Review Text</label>
+                            <input type="text" class="form-control" name="text" placeholder="Good Movie!" >
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
+                        <button type="button" class="btn btn-primary reviewSaveBtn">리뷰 저장</button>
+                        <button type="button" class="btn btn-warning modifyBtn">수정 </button>
+                        <button type="button" class="btn btn-danger removeBtn">삭제 </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <!--리뷰 모달창.end--------------------------------------------------------------------------->
+
+    <!--썸네일을 클릭했을 때, 원본이미지를 보여주는 modal창---------------------------------------------->
+        <div class="imageModal modal " tabindex="-2" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Picture</h5>
+
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <!--이 자리에 원본 이미지가 들어감-->
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <!--원본 이미지 모달창.end--------------------------------------------------------------------------->
+
+        <script th:src="@{/starrr.js}"></script>
+        <link th:href="@{/css/starrr.css}" rel="stylesheet">
+        <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.2.0/css/font-awesome.min.css">
+
+        <script>
+            $(document).ready(function(e) {
+                var grade = 0;
+                var mno = [[${dto.mno}]];
+
+                $('.starrr').starrr({
+                    rating: grade,
+                    change: function(e, value){ // change이벤트가 발생하면, 아래 if 함수가 출력
+                        if (value) { // value값이 있으면, value값을 grade담아서 변경.
+                            console.log(value);
+                            grade = value;
+                        }
+                    }
+                });
+
+                //$(".reviewModal").modal("show"); 미리 보기용
+                var reviewModal = $(".reviewModal");
+                var inputMid = $('input[name="mid"]');
+                var inputText = $('input[name="text"]');
+
+
+                $(".addReviewBtn").click(function () { // 리뷰 등록 버튼을 눌렀을 때,
+                    grade=0; // 먼저 점수 초기화
+                    inputMid.val("");
+                    inputText.val("");
+
+                    var star=$(".starrr").clone(); // starrr을 먼저 복제(clone) 후,(앞서 grade를 0점으로 초기화해놨기에, 복제본은 0점짜리가 복제됨)
+                    $(".starrr").remove();        // 원래껄 지움
+                    $("#divGrade").append(star); // 원래껄 지운 자리에, 복제본을 append함.
+                    $('.starrr').starrr({
+                         rating: grade,
+                         change: function(e, value){
+                             if (value) {
+                                 console.log(value);
+                                 grade = value;
+                             }
+                         }
+                     });
+
+                    $(".removeBtn ,  .modifyBtn").hide();
+                    $(".reviewSaveBtn").show();
+
+                    reviewModal.modal('show');
+                });
+
+
+                //모달창에 있는 리뷰저장 버튼을 눌렀을 때,
+                $('.reviewSaveBtn').click(function() {
+
+                    var data = {mno:mno, grade:grade, text:inputText.val(), mid: inputMid.val() };
+
+                    console.log(data);
+
+                    $.ajax({
+                        url:'/reviews/'+mno,
+                        type:"POST",
+                        data:JSON.stringify(data),
+                        contentType:"application/json; charset=utf-8",
+                        dataType:"text",
+                        success: function(result){
+
+                            console.log("result: " + result);
+
+                            self.location.reload(); // 새로고침..
+
+                        }
+                    })
+                    reviewModal.modal('hide');
+                });
+
+                //페이지가 열리면 바로 리뷰 데이터들을 가져와서 사용한다.
+                function getMovieReviews() {
+
+                    function formatTime(str){
+                        var date = new Date(str);
+
+                        return date.getFullYear() + '/' +
+                            (date.getMonth() + 1) + '/' +
+                            date.getDate() + ' ' +
+                            date.getHours() + ':' +
+                            date.getMinutes();
+                    }
+
+                    $.getJSON("/reviews/"+ mno +"/all", function(arr){ // getJSON..서버로 전송하면, 날라온 결과가 arr에 저장
+                        var str ="";
+
+                        $.each(arr, function(idx, review){
+
+                            console.log(review);
+
+                            str += '    <div class="card-body" data-reviewnum='+review.reviewnum+' data-mid='+review.mid+'>';
+                            str += '    <h5 class="card-title">'+review.text+' <span class="reviewgrade" data-grade2='+review.grade+'></span></h5>';
+                            str += '    <h6 class="card-subtitle mb-2 text-muted">'+review.nickname+'</h6>';
+                            str += '    <p class="card-text">'+ formatTime(review.regDate) +'</p>';
+                            str += '    </div>';
+                        });
+
+                        $(".reviewList").html(str);
+
+                        $(".reviewgrade").each(function(idx,o){
+                            console.log(o);
+                            $(this).starrr({rating:$(this).data("grade2"),readOnly: true}); // 눌렀다고 바뀌거나 하면 안되기에, readOnly: true를 검
+                        });
+                    });
+                }
+
+                //처음부터 리뷰 목록 출력
+                getMovieReviews();
+
+                var reviewnum;
+
+                $(".reviewList").on("click", ".card-body", function() { // card-body가 클릭되면
+
+                    $(".reviewSaveBtn").hide();              // save버튼 숨기고
+                    $(".removeBtn , .modifyBtn").show();    // 삭제, 수정 버튼 보이기
+
+
+                    var targetReview = $(this);
+
+                    reviewnum = targetReview.data("reviewnum");
+                    console.log("reviewnum: "+ reviewnum);
+                    inputMid.val(targetReview.data("mid"));
+                    //card-title을 찾아서, 복제(clone)를 해서, 자식(children)을 구한다. 즉, '+review.text+' <span>'+ review.grade+'얘들을 말함.
+                    //자식들을 찾아서 삭제(remove)하고, 체이닝을 멈춤(end) 후, 글자를 읽어옴(text)
+<!--                    inputText.val(targetReview.find('.card-title').clone().children().remove().end().text());-->
+
+<!--                    var grade = targetReview.find('.card-title span').html(); //card-title의 span('+ review.grade+')을 찾아서, html파일. 즉 점수(grade)를 읽어와라-->
+<!--                    $(".starrr a:nth-child("+grade+")").trigger('click'); // trigger('click') : 클릭 이벤트를 강제로 발생시키는 jQuery함수-->
+
+                    inputText.val(targetReview.find('.card-title').text().trim());
+
+                    var grade2 = $(this).find(".reviewgrade").data("grade2"); // 리뷰 목록에서 사용
+                    console.log(grade2);
+
+                    //.starrr초기화
+                    var star=$(".starrr").clone();
+                    $(".starrr").remove();
+                    $("#divGrade").append(star);
+
+                    $(".starrr").starrr({
+                        rating:grade2,
+                        change: function(e, value){
+                            if (value) {
+                                console.log(value);
+                                grade = value;
+                            }
+                        }
+                    });
+
+                    $('.reviewModal').modal('show');
+                });
+
+
+                $(".modifyBtn").on("click", function(){
+
+                    var data = {reviewnum: reviewnum, mno:mno, grade:grade, text:inputText.val(), mid: inputMid.val() };
+
+                    console.log(data);
+
+                    $.ajax({
+                        url:'/reviews/'+mno +"/"+ reviewnum ,
+                        type:"PUT",
+                        data:JSON.stringify(data),
+                        contentType:"application/json; charset=utf-8",
+                        dataType:"text",
+                        success: function(result){
+
+                            console.log("result: " + result);
+
+                            self.location.reload();
+
+                        }
+                    })
+                    reviewModal.modal('hide');
+                });
+
+                $(".removeBtn").on("click", function(){
+
+                    var data = {reviewnum: reviewnum};
+
+                    console.log(data);
+
+                    $.ajax({
+                        url:'/reviews/'+mno +"/"+ reviewnum ,
+                        type:"DELETE",
+                        contentType:"application/json; charset=utf-8",
+                        dataType:"text",
+                        success: function(result){
+
+                            console.log("result: " + result);
+
+                            self.location.reload();
+
+                        }
+                    })
+                    reviewModal.modal('hide');
+                });
+
+                $(".uploadResult li").click(function() {
+
+                    var file = $(this).data('file');
+
+                    console.log(file);
+
+                    var tempp1 = [];
+                    tempp1= file.split("s_");
+                    var tempp2 = tempp1[0]+tempp1[1];
+
+
+<!--                    $('.imageModal .modal-body').html("<img style='width:100%' src='/display?fileName="+file+"&size=1' >")-->
+                    $('.imageModal .modal-body').html("<img style='width:100%' src='/display?fileName="+tempp2+"&size=1' >")
+
+
+                    $(".imageModal").modal("show");
+                });
+            });
+        </script>
+
+  </th:block>
+</th:block>

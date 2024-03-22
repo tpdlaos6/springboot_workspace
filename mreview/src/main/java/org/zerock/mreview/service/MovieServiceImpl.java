@@ -15,8 +15,10 @@ import org.zerock.mreview.entity.MovieImage;
 import org.zerock.mreview.repository.MovieImageRepository;
 import org.zerock.mreview.repository.MovieRepository;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 @Service
@@ -31,7 +33,15 @@ public class MovieServiceImpl implements MovieService {
     @Transactional // 둘 다 성공할때만 커밋하라는 뜻으로 @Transactional을 검
     @Override
     public Long register(MovieDTO movieDTO) {
-        return null;
+        Map<String,Object> entityMap=dtoToEntity(movieDTO);
+        Movie movie=(Movie) entityMap.get("movie");
+        List<MovieImage> movieImageList=(List<MovieImage>)entityMap.get("imgList");
+        movieRepository.save(movie); // movie insert
+        movieImageList.forEach(movieImage -> {
+            imageRepository.save(movieImage); // movie image insert
+        });
+
+        return movie.getMno();
     }
 
     @Override
@@ -43,5 +53,22 @@ public class MovieServiceImpl implements MovieService {
         Function<Object[], MovieDTO> fn = (arr -> entitiesToDTO((Movie)arr[0],(List<MovieImage>)(Arrays.asList((MovieImage)arr[1])),(Double) arr[2],(Long)arr[3]));
 
         return new PageResultDTO<>(result, fn);
+    }
+
+    @Override
+    public MovieDTO getMovie(Long mno) {
+        List<Object[]> result=movieRepository.getMovieWithAll(mno);
+        Movie movie=(Movie) result.get(0)[0]; // 첫번째꺼 하나만 읽어옴
+        List<MovieImage> movieImageList=new ArrayList<>();
+
+        result.forEach(arr -> {
+            MovieImage movieImage = (MovieImage)arr[1];
+            movieImageList.add(movieImage);
+        });
+
+        Double avg = (Double) result.get(0)[2];
+        Long reviewCnt = (Long) result.get(0)[3];
+
+        return entitiesToDTO(movie, movieImageList, avg, reviewCnt);
     }
 }

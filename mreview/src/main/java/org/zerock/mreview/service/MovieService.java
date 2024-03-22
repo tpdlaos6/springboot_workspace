@@ -1,5 +1,6 @@
 package org.zerock.mreview.service;
 
+import org.springframework.web.bind.annotation.GetMapping;
 import org.zerock.mreview.dto.MovieDTO;
 import org.zerock.mreview.dto.MovieImageDTO;
 import org.zerock.mreview.dto.PageRequestDTO;
@@ -18,8 +19,11 @@ public interface MovieService {
     //등록
     Long register(MovieDTO movieDTO);
 
-    //목록 처리
+    //목록
     PageResultDTO<MovieDTO, Object[]> getList(PageRequestDTO requestDTO);
+
+    //상세보기
+    MovieDTO getMovie(Long mno);
 
     default MovieDTO entitiesToDTO(Movie movie, List<MovieImage> movieImages, Double avg, Long revieCnt){
         MovieDTO movieDTO=MovieDTO.builder().mno(movie.getMno()).title(movie.getTitle()).regDate(movie.getRegDate()).modDate(movie.getModDate()).build();
