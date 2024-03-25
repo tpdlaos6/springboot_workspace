@@ -58,8 +58,21 @@
             <button class="btn btn-primary">등록</button>
         </form>
 
-        <script>
+        <script type="application/javascript" th:inline="javascript" th:fragment="ajax-csrf-header">
             $(document).ready(function(){
+              /** CSRF 토큰 전달 ****************************************************************/
+              // 스프링부트의 타임리프에서 spring security를 쓸 때는 csrf토큰값이 디폴트이기 때문에,
+              // get 방식을 제외한, post, put, patch, delete 시 csrf토큰을 전달해주는 코드를 작성해야 함.
+              // 이거 작성 안하면 브라우저에서 f12 눌렀을 때 콘솔창에 에러 뜸... 주의!
+              // 현재 페이지 내에서 전체적으로 적용이 되게끔 하는 법과, 해당 위치에서만 적용하게끔 하는 두 가지 방법이 있음.
+              // 여기선 현 페이지 안에서 글로벌하게 적용이 되는 방식. 로컬한 방식은 uploadEx.html에서 1번,2번,3번 검색해서 참고할 것!!!
+                var csrfToken = /*[[${_csrf.token}]]*/ null;
+                var csrfHeader = /*[[${_csrf.headerName}]]*/ null;
+                $(document).ajaxSend(function (e, xhr, options) {
+                    xhr.setRequestHeader(csrfHeader, csrfToken);
+                });
+              /** CSRF 토큰 전달.end ****************************************************************/
+
               // 정규식으로 표현. 마지막 점(.)뒤에 jpg|png|gif 이 확장자들이 오는 파일들을 regex에 담음
                 var regex = new RegExp("(.*?)\.(jpg|png|gif)$");
                 var maxSize = 10485760; //10MB

@@ -2,6 +2,7 @@ package org.zerock.mreview.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,11 +22,13 @@ public class MovieController {
 
     private final MovieService movieService;  // 주입
 
+    // 등록화면
     @GetMapping("/register")
+    @PreAuthorize("hasRole('ROLE_ADMIN')") // admin role만
     public void register(){}
 
 
-    //등록
+    //등록 처리
     @PostMapping("/register")
     public String register(MovieDTO movieDTO, RedirectAttributes redirectAttributes){
         Long mno = movieService.register(movieDTO);

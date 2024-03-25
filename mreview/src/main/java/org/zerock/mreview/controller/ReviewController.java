@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.zerock.mreview.dto.ReviewDTO;
 import org.zerock.mreview.service.ReviewService;
@@ -18,6 +19,7 @@ public class ReviewController {
 
     private final ReviewService reviewService;
 
+    //목록
     @GetMapping("/{mno}/all")
     public ResponseEntity<List<ReviewDTO>> getList(@PathVariable("mno") Long mno){
         log.info("--------------list---------------");
@@ -28,7 +30,9 @@ public class ReviewController {
         return new ResponseEntity<>(reviewDTOList, HttpStatus.OK);
     }
 
+    //등록
     @PostMapping("/{mno}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Long> addReview(@RequestBody ReviewDTO movieReviewDTO){
         log.info("--------------add MovieReview---------------");
         log.info("reviewDTO: " + movieReviewDTO);
@@ -38,7 +42,9 @@ public class ReviewController {
         return new ResponseEntity<>( reviewnum, HttpStatus.OK);
     }
 
+    //수정
     @PutMapping("/{mno}/{reviewnum}")
+    @PreAuthorize("principal.username == #movieReviewDTO.mid") // 로그인한 ID와 board의 작성자가 같은지?
     public ResponseEntity<Long> modifyReview(@PathVariable Long reviewnum,
                                              @RequestBody ReviewDTO movieReviewDTO){
         log.info("---------------modify MovieReview--------------" + reviewnum);
@@ -49,6 +55,7 @@ public class ReviewController {
         return new ResponseEntity<>( reviewnum, HttpStatus.OK);
     }
 
+    //삭제
     @DeleteMapping("/{mno}/{reviewnum}")
     public ResponseEntity<Long> removeReview( @PathVariable Long reviewnum){
         log.info("---------------modify removeReview--------------");

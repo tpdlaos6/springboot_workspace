@@ -134,8 +134,17 @@
         <link th:href="@{/css/starrr.css}" rel="stylesheet">
         <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.2.0/css/font-awesome.min.css">
 
-        <script>
+        <script type="application/javascript" th:inline="javascript" th:fragment="ajax-csrf-header">
             $(document).ready(function(e) {
+
+                /* CSRF Token 전달 ***********************************************************/
+                var csrfToken = /*[[${_csrf.token}]]*/ null;
+                var csrfHeader = /*[[${_csrf.headerName}]]*/ null;
+                $(document).ajaxSend(function (e, xhr, options) {
+                    xhr.setRequestHeader(csrfHeader, csrfToken);
+                });
+                /* CSRF Tokenn 전달.end */
+
                 var grade = 0;
                 var mno = [[${dto.mno}]];
 

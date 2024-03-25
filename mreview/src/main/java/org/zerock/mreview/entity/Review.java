@@ -15,7 +15,7 @@ public class Review extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long reviewnum;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY) // ManyToOne을 걸때는 많은쪽에서 하나를 바라보기 때문에, 당연히 레퍼런스가 하나
     private Movie movie;
 
     @ManyToOne(fetch = FetchType.LAZY)

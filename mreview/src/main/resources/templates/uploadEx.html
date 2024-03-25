@@ -15,7 +15,15 @@
     <script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
 
     <script>
+        $(document).ready(function(){
+            // csrf토큰처리
+            var csrfHeaderName="${_csrf.headerName}"; // csrf토큰 방식. 해당 위치에서만 1번
+            var csrfTokenValue="${_csrf.token}";// csrf토큰 방식. 해당 위치에서만 2번
+        })
+
+
         $('.uploadBtn').click(function(){
+
             var formData = new FormData();              // formData를 만든 후
             var inputFile = $("input[type='file']");    // type이 'file'인 것들은 찾아와서 inputFile에 담음
             var files = inputFile[0].files;             // 멀티플이므로, files 사용
@@ -25,7 +33,11 @@
             }
 
             // ajax방식으로 파일업로드
+
             $.ajax({
+                beforeSend: function(xhr){ // 전역이 아닌, 해당 위치에서만 csrf토큰 방식이 작동하게끔 하는 방식. 3번.end
+								xhr.setRequestHeader(csrfHeaderName, csrfTokenValue);
+							}
                 url: '/uploadAjax ',
                 processData: false, // 파일 업로드 시, 쿼리스트링 방식으로 안넘어가게 하기 위해 processData를 false로 줘야 함
                 contentType: false,
@@ -36,7 +48,9 @@
                     console.log(result);   //나중에 화면 처리
                     showUploadedImages(result); // 이미지 출력
                 },
-                error: function(jqXHR, textStatus, errorThrown){
+                error: function(jqXHR, textStatus, errorThrown){// jqXHR : jq는 제이쿼리. XHR은 XmlHpptRequest. XHR이라는 자바스크립트 객체가 있음.
+                                                            //브라우저간 호환성이 떨어져서 제이쿼리가 뜸. 제이쿼리로 ajax함수를 쓰는 게 호환성 및 편리성이 좋아서 많이 사용.
+                                                            //jqXHR는 제이쿼리에서 쓰는 XHR이다. 뭐 이런 뜻으로 이해하면 될 듯.
                    console.log(textStatus);
                 }
             });
